@@ -4,6 +4,9 @@
 #include <QWidget>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSceneEvent>
+#include <vector>
+
+using namespace std;
 
 class Piece : public QGraphicsPixmapItem{
     public:
@@ -17,11 +20,15 @@ class Piece : public QGraphicsPixmapItem{
         static const int white;
         static const int black;
 
+        static const vector<vector<QPoint>> moveOffset;
+
         Piece(int type, int color, int x, int y);
+        bool edgeCheck(int tx, int ty);
         int getColor();
-        int getTyper();
+        int getType();
         int getX();
         int getY();
+        void captured();
 
     protected:
         void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -33,6 +40,15 @@ class Piece : public QGraphicsPixmapItem{
         int type;
         int x;
         int y;
+
+        vector<QPoint> legalMove;
+
+        bool hasFirstMove;
+
+        void movetoSquare(int x, int y);
+        void findLegalMove();
+        void slideMove();
+        void oneBlockMove();
 };
 
 #endif // PIECE_H

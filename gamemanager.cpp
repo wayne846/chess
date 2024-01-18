@@ -11,6 +11,7 @@ using namespace std;
 
 const QColor GameManager::light_square_color = QColor(237, 228, 221);
 const QColor GameManager::dark_square_color = QColor(112, 63, 20);
+const QColor GameManager::gray = QColor(181, 181, 181);
 
 const int GameManager::square_width = 70;
 int GameManager::window_width = square_width * 8;
@@ -18,6 +19,7 @@ int GameManager::window_width = square_width * 8;
 MainWindow* GameManager::window;
 QGraphicsScene* GameManager::scene;
 QGraphicsRectItem* GameManager::squares[8][8];
+Piece* GameManager::pieceOnSquare[8][8];
 QPixmap* GameManager::images[2][6];
 string GameManager::fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 vector<Piece*> GameManager::pieces[2];
@@ -47,6 +49,13 @@ void GameManager::generateChessBoard(){
                 squares[i][j] = scene->addRect(QRect(0, 0, square_width, square_width), QPen(dark_square_color), QBrush(dark_square_color));
             }
             squares[i][j]->setPos(square_width*j, square_width*i);
+        }
+    }
+
+    //init pieceOnSquare
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            pieceOnSquare[i][j] = NULL;
         }
     }
 
@@ -110,7 +119,9 @@ void GameManager::generateChessBoard(){
                     type = Piece::king;
                     break;
             }
-            pieces[color].push_back(new Piece(type, color, index%8, index/8));
+            Piece *newPiece = new Piece(type, color, index%8, index/8);
+            pieces[color].push_back(newPiece);
+            pieceOnSquare[index/8][index%8] = newPiece;
             index++;
         }
     }

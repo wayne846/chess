@@ -23,6 +23,7 @@ Piece* GameManager::pieceOnSquare[8][8];
 QPixmap* GameManager::images[2][6];
 string GameManager::fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 vector<Piece*> GameManager::pieces[2];
+int GameManager::turn = Piece::white;
 
 void GameManager::generateChessBoard(){
     //set window

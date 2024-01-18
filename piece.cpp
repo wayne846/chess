@@ -68,19 +68,24 @@ void Piece::captured(){
     delete(this);
 }
 
+int Piece::oppositeColor(){
+    if(color == white){
+        return black;
+    }else{
+        return white;
+    }
+}
+
 void Piece::findLegalMove(){
     legalMove.clear();
-    if(type == 0 || type == 2 || type == 5){
+    if(type == pawn || type == knight || type == king){
         oneBlockMove();
     }else{
         slideMove();
     }
-    for(int i = 0 ; i < legalMove.size(); i++){
-        qDebug() << "(" << legalMove[i].x() << ", " << legalMove[i].y() << "), ";
-    }
 }
 
-void Piece::slideMove(){
+void Piece::slideMove(){ //for bishop rook queen
     for(int i = 0; i < moveOffset[type].size(); i++){
         QPoint offset = moveOffset[type][i];
         if(color == black) offset = -offset;
@@ -102,7 +107,7 @@ void Piece::slideMove(){
     }
 }
 
-void Piece::oneBlockMove(){
+void Piece::oneBlockMove(){ //for pawn knight king
     for(int i = 0; i < moveOffset[type].size(); i++){
         QPoint offset = moveOffset[type][i];
         if(color == black) offset = -offset;
@@ -115,9 +120,44 @@ void Piece::oneBlockMove(){
             if(GameManager::pieceOnSquare[now.y()][now.x()]->getColor() == color){
                 continue;
             }else{
-                legalMove.push_back(now);
+                if(type != pawn){ //pawn can't eat forward piece
+                    legalMove.push_back(now);
+                }
                 continue;
             }
+        }
+    }
+
+    //pawn other move
+    if(type == pawn){
+        QPoint offset = moveOffset[type][0];
+        if(color == black) offset = -offset;
+
+        //first move 2 square
+        if(hasFirstMove == false){
+
+            QPoint now(x, y);
+            now += offset;
+            if(edgeCheck(now.x(), now.y()) && GameManager::pieceOnSquare[now.y()][now.x()] == NULL){ //check first square
+                now += offset;
+                if(edgeCheck(now.x(), now.y()) && GameManager::pieceOnSquare[now.y()][now.x()] == NULL){ //check second square
+                    legalMove.push_back(now);
+                }
+            }
+        }
+
+        //diagonally capture
+        QPoint diagonal1 = QPoint(x, y) + offset + QPoint(1, 0);
+        QPoint diagonal2 = QPoint(x, y) + offset + QPoint(-1, 0);
+        if(edgeCheck(diagonal1.x(), diagonal1.y()) &&
+           GameManager::pieceOnSquare[diagonal1.y()][diagonal1.x()] != NULL &&
+           GameManager::pieceOnSquare[diagonal1.y()][diagonal1.x()]->getColor() != color){
+            legalMove.push_back(diagonal1);
+        }
+        if(edgeCheck(diagonal2.x(), diagonal2.y()) &&
+           GameManager::pieceOnSquare[diagonal2.y()][diagonal2.x()] != NULL &&
+           GameManager::pieceOnSquare[diagonal2.y()][diagonal2.x()]->getColor() != color){
+            legalMove.push_back(diagonal2);
         }
     }
 }
@@ -130,7 +170,12 @@ void Piece::movetoSquare(int tx, int ty){
     this->setPos(GameManager::square_width*x, GameManager::square_width*y);
 }
 
+
+//mouseEvent
+
 void Piece::mousePressEvent(QGraphicsSceneMouseEvent *event){
+    if(GameManager::turn != color) return;
+
     findLegalMove();
     this->setPos(event->scenePos().x()-GameManager::square_width/2, event->scenePos().y()-GameManager::square_width/2);
     this->setZValue(1);
@@ -141,6 +186,8 @@ void Piece::mousePressEvent(QGraphicsSceneMouseEvent *event){
 }
 
 void Piece::mouseMoveEvent(QGraphicsSceneMouseEvent *event){
+    if(GameManager::turn != color) return;
+
     this->setPos(event->scenePos().x()-GameManager::square_width/2, event->scenePos().y()-GameManager::square_width/2);
 
     //visualize
@@ -149,6 +196,8 @@ void Piece::mouseMoveEvent(QGraphicsSceneMouseEvent *event){
 }
 
 void Piece::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
+    if(GameManager::turn != color) return;
+
     this->setZValue(0);
 
     bool flag = false;
@@ -165,6 +214,8 @@ void Piece::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
             GameManager::pieceOnSquare[ty][tx]->captured();
         }
         movetoSquare(tx, ty);
+        GameManager::turn = oppositeColor();
+        hasFirstMove = true;
     }else{
         this->setPos(GameManager::square_width*x, GameManager::square_width*y);
     }

@@ -29,6 +29,7 @@ class Piece : public QGraphicsPixmapItem{
         int getX();
         int getY();
         void captured();
+        int oppositeColor();
 
     protected:
         void mousePressEvent(QGraphicsSceneMouseEvent *event);

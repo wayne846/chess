@@ -27,6 +27,7 @@ class GameManager
         static QPixmap* images[2][6];
         static string fen;
         static vector<Piece*> pieces[2];
+        static int turn;
 
         static void generateChessBoard();
 };

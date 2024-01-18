@@ -2,6 +2,7 @@
 #include "gamemanager.h"
 
 vector<QGraphicsEllipseItem*> Visualize::legalMoveCircle;
+QGraphicsRectItem* Visualize::highlightSquare = NULL;
 
 void Visualize::showLegalMove(vector<QPoint> v){
     hideLegalMove();
@@ -22,4 +23,21 @@ void Visualize::hideLegalMove(){
         }
     }
     legalMoveCircle.clear();
+}
+
+void Visualize::showHighlightSquare(int x, int y){
+    if(highlightSquare != NULL && highlightSquare->pos().x() == x && highlightSquare->pos().y() == y){
+        return;
+    }
+    hideHighlightSquare();
+    int width = GameManager::square_width;
+    highlightSquare = GameManager::scene->addRect(QRect(0, 0, width, width), QPen(GameManager::gray, width/25));
+    highlightSquare->setPos(width * x, width * y);
+}
+
+void Visualize::hideHighlightSquare(){
+    if(highlightSquare != NULL){
+        delete(highlightSquare);
+        highlightSquare = NULL;
+    }
 }

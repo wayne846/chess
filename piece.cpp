@@ -134,17 +134,23 @@ void Piece::mousePressEvent(QGraphicsSceneMouseEvent *event){
     findLegalMove();
     this->setPos(event->scenePos().x()-GameManager::square_width/2, event->scenePos().y()-GameManager::square_width/2);
     this->setZValue(1);
+
+    //visualize
     Visualize::showLegalMove(legalMove);
+    Visualize::showHighlightSquare((int)event->scenePos().x() / GameManager::square_width, (int)event->scenePos().y() / GameManager::square_width);
 }
 
 void Piece::mouseMoveEvent(QGraphicsSceneMouseEvent *event){
     this->setPos(event->scenePos().x()-GameManager::square_width/2, event->scenePos().y()-GameManager::square_width/2);
+
+    //visualize
+    Visualize::showHighlightSquare((int)event->scenePos().x() / GameManager::square_width, (int)event->scenePos().y() / GameManager::square_width);
     //qDebug() << (int)event->scenePos().x() / GameManager::square_width << " " << (int)event->scenePos().y() / GameManager::square_width;
 }
 
 void Piece::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
-    Visualize::hideLegalMove();
     this->setZValue(0);
+
     bool flag = false;
     int tx = (int)event->scenePos().x() / GameManager::square_width;
     int ty = (int)event->scenePos().y() / GameManager::square_width;
@@ -155,11 +161,17 @@ void Piece::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
         }
     }
     if(flag){
+        if(GameManager::pieceOnSquare[ty][tx] != NULL && GameManager::pieceOnSquare[ty][tx]->getColor() != color){
+            GameManager::pieceOnSquare[ty][tx]->captured();
+        }
         movetoSquare(tx, ty);
     }else{
         this->setPos(GameManager::square_width*x, GameManager::square_width*y);
     }
 
+    //visualize
+    Visualize::hideLegalMove();
+    Visualize::hideHighlightSquare();
     //qDebug() << x << " " << y;
 }
 

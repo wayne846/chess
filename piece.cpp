@@ -14,6 +14,8 @@ const int Piece::king = 5;
 const int Piece::white = 0;
 const int Piece::black = 1;
 
+const int Piece::promotionTurn = 3;
+
 const vector<vector<QPoint>> Piece::moveOffset = {{QPoint(0, -1)},
                                            {QPoint(1, 1), QPoint(1, -1), QPoint(-1, -1), QPoint(-1, 1)},
                                            {QPoint(-1, 2), QPoint(1, 2), QPoint(2, 1), QPoint(2, -1), QPoint(1, -2), QPoint(-1, -2), QPoint(-2, -1), QPoint(-2, 1)},
@@ -140,6 +142,13 @@ void Piece::move(int tx, int ty){
         GameManager::pieceOnSquare[ty][tx]->captured();
     }
     movetoSquare(tx, ty);
+
+    //pawn promotion
+    if(type == pawn && (y == 0 || y == 7)){
+        Visualize::showPromotionList(this);
+        GameManager::turn = promotionTurn;
+        return;
+    }
     GameManager::turn = oppositeColor();
     hasFirstMove = true;
     for(int i = 0; i < GameManager::pieces[color].size(); i++){

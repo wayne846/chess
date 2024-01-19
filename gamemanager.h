@@ -17,6 +17,7 @@ class GameManager
         static const QColor light_square_color;
         static const QColor dark_square_color;
         static const QColor gray;
+        static const QColor white;
 
         static const int square_width;
         static int window_width;

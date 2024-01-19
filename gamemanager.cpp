@@ -12,6 +12,7 @@ using namespace std;
 const QColor GameManager::light_square_color = QColor(237, 228, 221);
 const QColor GameManager::dark_square_color = QColor(112, 63, 20);
 const QColor GameManager::gray = QColor(181, 181, 181);
+const QColor GameManager::white = QColor(232, 232, 232);
 
 const int GameManager::square_width = 70;
 int GameManager::window_width = square_width * 8;
@@ -28,6 +29,8 @@ int GameManager::turn = Piece::white;
 void GameManager::generateChessBoard(){
     //set window
     window->setGeometry(0, 0, square_width*8, square_width*8);
+    window->setMinimumSize(QSize(square_width*8, square_width*8));
+    window->setMaximumSize(QSize(square_width*8, square_width*8));
     QRect screenSize = window->screen()->geometry();
     window->move(screenSize.width()/2 - window_width/2, screenSize.height()/2 - window_width/2);
 

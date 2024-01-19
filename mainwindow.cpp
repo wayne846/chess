@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     GameManager::images[1][5] = new QPixmap(":/black_king");
 
     GameManager::generateChessBoard();
+
 }
 
 Ui::MainWindow* MainWindow::getui(){

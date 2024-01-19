@@ -20,6 +20,8 @@ class Piece : public QGraphicsPixmapItem{
         static const int white;
         static const int black;
 
+        static const int promotionTurn;
+
         static const vector<vector<QPoint>> moveOffset;
 
         Piece(int type, int color, int x, int y);

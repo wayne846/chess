@@ -1,8 +1,14 @@
 #include "visualize.h"
 #include "gamemanager.h"
+#include "piece.h"
+#include "promotionpiece.h"
+#include <QDebug>
 
 vector<QGraphicsEllipseItem*> Visualize::legalMoveCircle;
 QGraphicsRectItem* Visualize::highlightSquare = NULL;
+Piece* Visualize::promotionPawn = NULL;
+vector<PromotionPiece*> Visualize::promotionPieces;
+QGraphicsRectItem* Visualize::promotionBackground = NULL;
 
 void Visualize::showLegalMove(vector<QPoint> v){
     hideLegalMove();
@@ -40,4 +46,64 @@ void Visualize::hideHighlightSquare(){
         delete(highlightSquare);
         highlightSquare = NULL;
     }
+}
+
+void Visualize::showPromotionList(Piece *p){
+    promotionPawn = p;
+
+    //first init
+    if(promotionPieces.empty()){
+        promotionPieces.push_back(new PromotionPiece(Piece::queen, Piece::white));
+        promotionPieces.push_back(new PromotionPiece(Piece::knight, Piece::white));
+        promotionPieces.push_back(new PromotionPiece(Piece::rook, Piece::white));
+        promotionPieces.push_back(new PromotionPiece(Piece::bishop, Piece::white));
+    }
+    if(promotionBackground == NULL){
+        promotionBackground = GameManager::scene->addRect(QRect(0, 0, GameManager::square_width, GameManager::square_width * promotionPieces.size()), QPen(GameManager::white), QBrush(GameManager::white));
+        promotionBackground->setZValue(1);
+    }
+
+    promotionBackground->show();
+    if(p->getColor() == Piece::white){
+        for(int i = 0; i < promotionPieces.size(); i++){
+            promotionPieces[i]->setColor(Piece::white);
+            promotionPieces[i]->setPos(GameManager::square_width * p->getX(), GameManager::square_width * (p->getY()+i));
+            promotionPieces[i]->show();
+        }
+        promotionBackground->setPos(GameManager::square_width * p->getX(), GameManager::square_width * p->getY());
+    }else{
+        for(int i = 0; i < promotionPieces.size(); i++){
+            promotionPieces[i]->setColor(Piece::black);
+            promotionPieces[i]->setPos(GameManager::square_width * p->getX(), GameManager::square_width * (p->getY()-i));
+            promotionPieces[i]->show();
+        }
+        promotionBackground->setPos(GameManager::square_width * p->getX(), GameManager::square_width * (p->getY()-promotionPieces.size()+1));
+    }
+}
+
+void Visualize::promotionClicked(int type){
+    promotionBackground->hide();
+    for(int i = 0; i < promotionPieces.size(); i++){
+        promotionPieces[i]->hide();
+    }
+    int x = promotionPawn->getX();
+    int y = promotionPawn->getY();
+    int color = promotionPawn->getColor();
+
+    //delete pawn
+    GameManager::pieceOnSquare[y][x] = NULL;
+    for(int i = 0; i < GameManager::pieces[color].size(); i++){
+        if(GameManager::pieces[color][i] == promotionPawn){
+            GameManager::pieces[color].erase(GameManager::pieces[color].begin() + i);
+            break;
+        }
+    }
+    delete(promotionPawn);
+    promotionPawn = NULL;
+
+    //create new piece
+    Piece *newPiece = new Piece(type, color, x, y);
+    GameManager::pieceOnSquare[y][x] = newPiece;
+    GameManager::pieces[color].push_back(newPiece);
+    GameManager::turn = newPiece->oppositeColor();
 }

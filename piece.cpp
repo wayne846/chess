@@ -32,8 +32,6 @@ Piece::Piece(int type, int color, int x, int y){
     this->setPixmap(GameManager::images[color][type]->scaled(QSize(GameManager::square_width, GameManager::square_width)));
     this->setPos(GameManager::square_width*x, GameManager::square_width*y);
     GameManager::scene->addItem(this);
-
-
 }
 
 bool Piece::edgeCheck(int tx, int ty){
@@ -60,13 +58,13 @@ int Piece::getY(){
     return y;
 }
 
+bool Piece::getHasFirstMove(){
+    return hasFirstMove;
+}
+
 void Piece::captured(){
     GameManager::pieceOnSquare[y][x] = NULL;
-    for(int i = 0; i < GameManager::pieces[color].size(); i++){
-        if(GameManager::pieces[color][i] == this){
-            GameManager::pieces[color].erase(GameManager::pieces[color].begin() + i);
-        }
-    }
+    GameManager::pieces_erase(this);
     delete(this);
 }
 
@@ -76,6 +74,18 @@ int Piece::oppositeColor(){
     }else{
         return white;
     }
+}
+
+bool Piece::isAttackPosition(int tx, int ty){
+    bool flag = false;
+    findLegalMove();
+    for(int i = 0; i < legalMove.size(); i++){
+        if(legalMove[i].x() == tx && legalMove[i].y() == ty){
+            flag = true;
+            break;
+        }
+    }
+    return flag;
 }
 
 void Piece::addEnPassant(int c){
@@ -92,6 +102,46 @@ void Piece::findLegalMove(){
         oneBlockMove();
     }else{
         slideMove();
+    }
+}
+
+void Piece::removeIllegalMove(){
+    for(int i = 0; i < legalMove.size(); i++){
+        //save origin board
+        Piece *target = NULL;
+        int originX = x;
+        int originY = y;
+        if(GameManager::pieceOnSquare[legalMove[i].y()][legalMove[i].x()] != NULL){
+            target = GameManager::pieceOnSquare[legalMove[i].y()][legalMove[i].x()];
+            GameManager::pieces_erase(target);
+        }
+
+        //assume piece already move
+        GameManager::pieceOnSquare[y][x] = NULL;
+        GameManager::pieceOnSquare[legalMove[i].y()][legalMove[i].x()] = this;
+        x = legalMove[i].x();
+        y = legalMove[i].y();
+
+        //check if be checked
+        QPoint kingPosition = GameManager::kingPosition(color);
+        bool flag = GameManager::isSquareBeAttacked(oppositeColor(), kingPosition.x(), kingPosition.y());
+
+        //return origin board
+        if(target != NULL){
+            GameManager::pieceOnSquare[legalMove[i].y()][legalMove[i].x()] = target;
+            GameManager::pieces[target->getColor()].push_back(target);
+        }else{
+            GameManager::pieceOnSquare[legalMove[i].y()][legalMove[i].x()] = NULL;
+        }
+        GameManager::pieceOnSquare[originY][originX] = this;
+        x = originX;
+        y = originY;
+
+        //remove illegal move
+        if(flag){
+            legalMove.erase(legalMove.begin() + i);
+            i = -1; //restart loop
+        }
     }
 }
 
@@ -200,7 +250,7 @@ void Piece::oneBlockMove(){ //for pawn knight king
         }
     }
 
-    //pawn other move
+    //pawn move
     if(type == pawn){
         QPoint offset = moveOffset[type][0];
         if(color == black) offset = -offset;
@@ -240,6 +290,10 @@ void Piece::oneBlockMove(){ //for pawn knight king
             }
         }
     }
+
+    //king castling
+    if(type == king && hasFirstMove == false){
+    }
 }
 
 void Piece::movetoSquare(int tx, int ty){
@@ -257,6 +311,7 @@ void Piece::mousePressEvent(QGraphicsSceneMouseEvent *event){
     if(GameManager::turn != color) return;
 
     findLegalMove();
+    removeIllegalMove();
     this->setPos(event->scenePos().x()-GameManager::square_width/2, event->scenePos().y()-GameManager::square_width/2);
     this->setZValue(1);
 

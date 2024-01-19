@@ -31,6 +31,10 @@ class GameManager
         static int turn;
 
         static void generateChessBoard();
+
+        static void pieces_erase(Piece* p);
+        static QPoint kingPosition(int color);
+        static bool isSquareBeAttacked(int color, int tx, int ty); // is color attack that square
 };
 
 #endif // GAMEMANAGER_H

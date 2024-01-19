@@ -130,3 +130,32 @@ void GameManager::generateChessBoard(){
         }
     }
 }
+
+void GameManager::pieces_erase(Piece *p){
+    for(int i = 0; i < pieces[p->getColor()].size(); i++){
+        if(pieces[p->getColor()][i] == p){
+            pieces[p->getColor()].erase(pieces[p->getColor()].begin() + i);
+            break;
+        }
+    }
+}
+
+QPoint GameManager::kingPosition(int color){
+    for(int i = 0; i < pieces[color].size(); i++){
+        if(pieces[color][i]->getType() == Piece::king){
+            return QPoint(pieces[color][i]->getX(), pieces[color][i]->getY());
+        }
+    }
+    return QPoint(0, 0);
+}
+
+bool GameManager::isSquareBeAttacked(int color, int tx, int ty){
+    bool flag = false;
+    for(int i = 0; i < pieces[color].size(); i++){
+        if(pieces[color][i]->isAttackPosition(tx, ty)){
+            flag = true;
+            break;
+        }
+    }
+    return flag;
+}

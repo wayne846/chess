@@ -30,8 +30,10 @@ class Piece : public QGraphicsPixmapItem{
         int getType();
         int getX();
         int getY();
+        bool getHasFirstMove();
         void captured();
         int oppositeColor();
+        bool isAttackPosition(int tx, int ty);
 
         //for pawn
         void addEnPassant(int c);
@@ -58,6 +60,7 @@ class Piece : public QGraphicsPixmapItem{
         void move(int tx, int ty); //all thing about move
         void movetoSquare(int tx, int ty); //just move, will change GameManager::pieceOnSquare
         void findLegalMove();
+        void removeIllegalMove(); //behind findLegalMove()
 
         void slideMove(); //bishop rook queen
         void oneBlockMove(); //pawn knight king

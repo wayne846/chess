@@ -92,12 +92,7 @@ void Visualize::promotionClicked(int type){
 
     //delete pawn
     GameManager::pieceOnSquare[y][x] = NULL;
-    for(int i = 0; i < GameManager::pieces[color].size(); i++){
-        if(GameManager::pieces[color][i] == promotionPawn){
-            GameManager::pieces[color].erase(GameManager::pieces[color].begin() + i);
-            break;
-        }
-    }
+    GameManager::pieces_erase(promotionPawn);
     delete(promotionPawn);
     promotionPawn = NULL;
 

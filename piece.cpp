@@ -76,6 +76,14 @@ int Piece::oppositeColor(){
     }
 }
 
+void Piece::addEnPassant(int c){
+    enPassant.push_back(c);
+}
+
+void Piece::clearEnPassant(){
+    enPassant.clear();
+}
+
 void Piece::findLegalMove(){
     legalMove.clear();
     if(type == pawn || type == knight || type == king){
@@ -83,6 +91,61 @@ void Piece::findLegalMove(){
     }else{
         slideMove();
     }
+}
+
+void Piece::move(int tx, int ty){
+    bool flag = false;
+    for(int i = 0; i < legalMove.size(); i++){
+        if(tx == legalMove[i].x() && ty == legalMove[i].y()){
+            flag = true;
+            break;
+        }
+    }
+
+    //illegal move
+    if(!flag){
+        this->setPos(GameManager::square_width*x, GameManager::square_width*y);
+        return;
+    }
+
+    //pawn
+    if(type == pawn){
+        //en passant
+        if(ty - y == 2 || ty - y == -2){ //move 2 square
+            if(edgeCheck(x-1, ty) &&
+               GameManager::pieceOnSquare[ty][x-1] != NULL &&
+               GameManager::pieceOnSquare[ty][x-1]->type == pawn &&
+               GameManager::pieceOnSquare[ty][x-1]->color != color){
+                GameManager::pieceOnSquare[ty][x-1]->addEnPassant(x);
+            }
+            if(edgeCheck(x+1, ty) &&
+               GameManager::pieceOnSquare[ty][x+1] != NULL &&
+               GameManager::pieceOnSquare[ty][x+1]->type == pawn &&
+               GameManager::pieceOnSquare[ty][x+1]->color != color){
+                GameManager::pieceOnSquare[ty][x+1]->addEnPassant(x);
+            }
+        }
+        for(int i = 0; i < enPassant.size(); i++){
+            if(tx == enPassant[i] && edgeCheck(tx, y) &&
+               GameManager::pieceOnSquare[y][tx] != NULL &&
+               GameManager::pieceOnSquare[y][tx]->type == pawn &&
+               GameManager::pieceOnSquare[y][tx]->color != color){
+                GameManager::pieceOnSquare[y][tx]->captured();
+                break;
+            }
+        }
+    }
+
+    if(GameManager::pieceOnSquare[ty][tx] != NULL && GameManager::pieceOnSquare[ty][tx]->getColor() != color){
+        GameManager::pieceOnSquare[ty][tx]->captured();
+    }
+    movetoSquare(tx, ty);
+    GameManager::turn = oppositeColor();
+    hasFirstMove = true;
+    for(int i = 0; i < GameManager::pieces[color].size(); i++){
+        GameManager::pieces[color][i]->clearEnPassant();
+    }
+
 }
 
 void Piece::slideMove(){ //for bishop rook queen
@@ -159,6 +222,14 @@ void Piece::oneBlockMove(){ //for pawn knight king
            GameManager::pieceOnSquare[diagonal2.y()][diagonal2.x()]->getColor() != color){
             legalMove.push_back(diagonal2);
         }
+
+        //en passant
+        for(int i = 0; i < enPassant.size(); i++){
+            int ty = y + offset.y();
+            if(edgeCheck(enPassant[i], ty) && GameManager::pieceOnSquare[ty][enPassant[i]] == NULL){
+                legalMove.push_back(QPoint(enPassant[i], ty));
+            }
+        }
     }
 }
 
@@ -200,29 +271,10 @@ void Piece::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){
 
     this->setZValue(0);
 
-    bool flag = false;
-    int tx = (int)event->scenePos().x() / GameManager::square_width;
-    int ty = (int)event->scenePos().y() / GameManager::square_width;
-    for(int i = 0; i < legalMove.size(); i++){
-        if(tx == legalMove[i].x() && ty == legalMove[i].y()){
-            flag = true;
-            break;
-        }
-    }
-    if(flag){
-        if(GameManager::pieceOnSquare[ty][tx] != NULL && GameManager::pieceOnSquare[ty][tx]->getColor() != color){
-            GameManager::pieceOnSquare[ty][tx]->captured();
-        }
-        movetoSquare(tx, ty);
-        GameManager::turn = oppositeColor();
-        hasFirstMove = true;
-    }else{
-        this->setPos(GameManager::square_width*x, GameManager::square_width*y);
-    }
+    move(event->scenePos().x() / GameManager::square_width, event->scenePos().y() / GameManager::square_width);
 
     //visualize
     Visualize::hideLegalMove();
     Visualize::hideHighlightSquare();
-    //qDebug() << x << " " << y;
 }
 

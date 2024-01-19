@@ -31,6 +31,10 @@ class Piece : public QGraphicsPixmapItem{
         void captured();
         int oppositeColor();
 
+        //for pawn
+        void addEnPassant(int c);
+        void clearEnPassant();
+
     protected:
         void mousePressEvent(QGraphicsSceneMouseEvent *event);
         void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
@@ -44,12 +48,17 @@ class Piece : public QGraphicsPixmapItem{
 
         vector<QPoint> legalMove;
 
+        //for pawn
+        vector<int> enPassant; //x position
+
         bool hasFirstMove;
 
-        void movetoSquare(int x, int y);
+        void move(int tx, int ty); //all thing about move
+        void movetoSquare(int tx, int ty); //just move, will change GameManager::pieceOnSquare
         void findLegalMove();
-        void slideMove();
-        void oneBlockMove();
+
+        void slideMove(); //bishop rook queen
+        void oneBlockMove(); //pawn knight king
 };
 
 #endif // PIECE_H

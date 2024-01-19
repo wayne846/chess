@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     GameManager::images[1][3] = new QPixmap(":/black_rook");
     GameManager::images[1][4] = new QPixmap(":/black_queen");
     GameManager::images[1][5] = new QPixmap(":/black_king");
+
     GameManager::generateChessBoard();
 }
 

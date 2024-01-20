@@ -1,6 +1,5 @@
 #include "piece.h"
 #include "gamemanager.h"
-//#include "mainwindow.h"
 #include "visualize.h"
 #include <QDebug>
 
@@ -15,6 +14,7 @@ const int Piece::white = 0;
 const int Piece::black = 1;
 
 const int Piece::promotionTurn = 3;
+const int Piece::endTurn = 4;
 
 const vector<vector<QPoint>> Piece::moveOffset = {{QPoint(0, -1)},
                                            {QPoint(1, 1), QPoint(1, -1), QPoint(-1, -1), QPoint(-1, 1)},
@@ -86,6 +86,17 @@ bool Piece::isAttackPosition(int tx, int ty){
         }
     }
     return flag;
+}
+
+bool Piece::hasLegalMove(){
+    findLegalMove();
+    findLegalSpecialMove();
+    removeIllegalMove();
+    if(legalMove.empty()){
+        return false;
+    }else{
+        return true;
+    }
 }
 
 void Piece::addEnPassant(int c){
@@ -188,10 +199,22 @@ void Piece::move(int tx, int ty){
         }
     }
 
+    //king
+    int castlingFlag = 0;
+    if(type == king){
+        //castling
+        if(tx - x == 2){
+            castlingFlag = 1; //king side
+        }else if(tx - x == -2){
+            castlingFlag = 2; //queen side
+        }
+    }
+
     if(GameManager::pieceOnSquare[ty][tx] != NULL && GameManager::pieceOnSquare[ty][tx]->getColor() != color){
         GameManager::pieceOnSquare[ty][tx]->captured();
     }
-    movetoSquare(tx, ty);
+
+    moveToSquare(tx, ty);
 
     //pawn promotion
     if(type == pawn && (y == 0 || y == 7)){
@@ -199,12 +222,37 @@ void Piece::move(int tx, int ty){
         GameManager::turn = promotionTurn;
         return;
     }
-    GameManager::turn = oppositeColor();
+
+    //castling
+    if(type == king){
+        if(castlingFlag == 1 && edgeCheck(x+1, y) && GameManager::pieceOnSquare[y][x+1] != NULL && GameManager::pieceOnSquare[y][x-1] == NULL){ //king side
+            Piece *rook = GameManager::pieceOnSquare[y][x+1];
+            rook->moveToSquare(x-1, y);
+        }
+        if(castlingFlag == 2 && edgeCheck(x-2, y) && GameManager::pieceOnSquare[y][x-2] != NULL && GameManager::pieceOnSquare[y][x+1] == NULL){
+            Piece *rook = GameManager::pieceOnSquare[y][x-2];
+            rook->moveToSquare(x+1, y);
+        }
+    }
+
+    GameManager::changTurn(oppositeColor());
     hasFirstMove = true;
     for(int i = 0; i < GameManager::pieces[color].size(); i++){
         GameManager::pieces[color][i]->clearEnPassant();
     }
 
+    //check if end
+    if(!GameManager::hasLegalMove(oppositeColor())){
+        QPoint enemyKingPosition = GameManager::kingPosition(oppositeColor());
+        if(GameManager::isSquareBeAttacked(color, enemyKingPosition.x(), enemyKingPosition.y())){
+            qDebug() << color << " win";
+            GameManager::endGame(color);
+        }else{
+            qDebug() << "draw";
+            GameManager::endGame(endTurn);
+        }
+        GameManager::turn = endTurn;
+    }
 }
 
 void Piece::slideMove(){ //for bishop rook queen
@@ -281,8 +329,14 @@ void Piece::oneBlockMove(){ //for pawn knight king
            GameManager::pieceOnSquare[diagonal2.y()][diagonal2.x()]->getColor() != color){
             legalMove.push_back(diagonal2);
         }
+    }
+}
 
-        //en passant
+void Piece::findLegalSpecialMove(){
+    //en passant
+    if(type == pawn){
+        QPoint offset = moveOffset[type][0];
+        if(color == black) offset = -offset;
         for(int i = 0; i < enPassant.size(); i++){
             int ty = y + offset.y();
             if(edgeCheck(enPassant[i], ty) && GameManager::pieceOnSquare[ty][enPassant[i]] == NULL){
@@ -292,11 +346,26 @@ void Piece::oneBlockMove(){ //for pawn knight king
     }
 
     //king castling
-    if(type == king && hasFirstMove == false){
+    if(type == king && hasFirstMove == false && !GameManager::isSquareBeAttacked(oppositeColor(), x, y)){
+        //king side
+        if(edgeCheck(x+1, y) && GameManager::pieceOnSquare[y][x+1] == NULL && !GameManager::isSquareBeAttacked(oppositeColor(), x+1, y) &&
+           edgeCheck(x+2, y) && GameManager::pieceOnSquare[y][x+2] == NULL && !GameManager::isSquareBeAttacked(oppositeColor(), x+2, y) &&
+           edgeCheck(x+3, y) && GameManager::pieceOnSquare[y][x+3] != NULL && GameManager::pieceOnSquare[y][x+3]->getType() == rook &&
+           GameManager::pieceOnSquare[y][x+3]->getColor() == color && GameManager::pieceOnSquare[y][x+3]->getHasFirstMove() == false){
+            legalMove.push_back(QPoint(x+2, y));
+        }
+        //queen side
+        if(edgeCheck(x-1, y) && GameManager::pieceOnSquare[y][x-1] == NULL && !GameManager::isSquareBeAttacked(oppositeColor(), x-1, y) &&
+           edgeCheck(x-2, y) && GameManager::pieceOnSquare[y][x-2] == NULL && !GameManager::isSquareBeAttacked(oppositeColor(), x-2, y) &&
+           edgeCheck(x-3, y) && GameManager::pieceOnSquare[y][x-3] == NULL &&
+           edgeCheck(x-4, y) && GameManager::pieceOnSquare[y][x-4] != NULL && GameManager::pieceOnSquare[y][x-4]->getType() == rook &&
+           GameManager::pieceOnSquare[y][x-4]->getColor() == color && GameManager::pieceOnSquare[y][x+4]->getHasFirstMove() == false){
+            legalMove.push_back(QPoint(x-2, y));
+        }
     }
 }
 
-void Piece::movetoSquare(int tx, int ty){
+void Piece::moveToSquare(int tx, int ty){
     GameManager::pieceOnSquare[y][x] = NULL;
     x = tx;
     y = ty;
@@ -311,6 +380,7 @@ void Piece::mousePressEvent(QGraphicsSceneMouseEvent *event){
     if(GameManager::turn != color) return;
 
     findLegalMove();
+    findLegalSpecialMove();
     removeIllegalMove();
     this->setPos(event->scenePos().x()-GameManager::square_width/2, event->scenePos().y()-GameManager::square_width/2);
     this->setZValue(1);
@@ -327,7 +397,6 @@ void Piece::mouseMoveEvent(QGraphicsSceneMouseEvent *event){
 
     //visualize
     Visualize::showHighlightSquare((int)event->scenePos().x() / GameManager::square_width, (int)event->scenePos().y() / GameManager::square_width);
-    //qDebug() << (int)event->scenePos().x() / GameManager::square_width << " " << (int)event->scenePos().y() / GameManager::square_width;
 }
 
 void Piece::mouseReleaseEvent(QGraphicsSceneMouseEvent *event){

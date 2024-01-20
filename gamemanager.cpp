@@ -33,6 +33,7 @@ void GameManager::generateChessBoard(){
     window->setMaximumSize(QSize(square_width*8, square_width*8));
     QRect screenSize = window->screen()->geometry();
     window->move(screenSize.width()/2 - window_width/2, screenSize.height()/2 - window_width/2);
+    window->setWindowTitle("chess (white turn)");
 
     //set view
     window->getui()->graphicsView->setFixedSize(window_width, window_width);
@@ -158,4 +159,36 @@ bool GameManager::isSquareBeAttacked(int color, int tx, int ty){
         }
     }
     return flag;
+}
+
+bool GameManager::hasLegalMove(int color){
+    bool flag = false;
+    for(int i = 0; i < pieces[color].size(); i++){
+        if(pieces[color][i]->hasLegalMove()){
+            flag = true;
+            break;
+        }
+    }
+    return flag;
+}
+
+void GameManager::changTurn(int color){
+    turn = color;
+    if(color == Piece::white){
+        window->setWindowTitle("chess (white turn)");
+    }
+    if(color == Piece::black){
+        window->setWindowTitle("chess (black turn)");
+    }
+}
+
+void GameManager::endGame(int result){
+    turn = Piece::endTurn;
+    if(result == Piece::white){
+        window->setWindowTitle("chess (white win)");
+    }else if(result == Piece::black){
+        window->setWindowTitle("chess (black win)");
+    }else if(result == Piece::endTurn){
+        window->setWindowTitle("chess (draw)");
+    }
 }

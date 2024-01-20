@@ -21,6 +21,7 @@ class Piece : public QGraphicsPixmapItem{
         static const int black;
 
         static const int promotionTurn;
+        static const int endTurn;
 
         static const vector<vector<QPoint>> moveOffset;
 
@@ -34,6 +35,8 @@ class Piece : public QGraphicsPixmapItem{
         void captured();
         int oppositeColor();
         bool isAttackPosition(int tx, int ty);
+        bool hasLegalMove();
+        void moveToSquare(int tx, int ty); //just move, will change GameManager::pieceOnSquare
 
         //for pawn
         void addEnPassant(int c);
@@ -58,8 +61,8 @@ class Piece : public QGraphicsPixmapItem{
         bool hasFirstMove;
 
         void move(int tx, int ty); //all thing about move
-        void movetoSquare(int tx, int ty); //just move, will change GameManager::pieceOnSquare
         void findLegalMove();
+        void findLegalSpecialMove(); //behind findLegalMove(), en passant and king castling
         void removeIllegalMove(); //behind findLegalMove()
 
         void slideMove(); //bishop rook queen

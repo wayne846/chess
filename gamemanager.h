@@ -35,6 +35,9 @@ class GameManager
         static void pieces_erase(Piece* p);
         static QPoint kingPosition(int color);
         static bool isSquareBeAttacked(int color, int tx, int ty); // is color attack that square
+        static bool hasLegalMove(int color);
+        static void changTurn(int color);
+        static void endGame(int result);
 };
 
 #endif // GAMEMANAGER_H

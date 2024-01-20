@@ -35,3 +35,43 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+void MainWindow::on_actionrestart_triggered(){
+    GameManager::generateChessBoard();
+}
+
+
+void MainWindow::on_actionchangeSize50_triggered()
+{
+    GameManager::sizePercent = 0.5;
+    GameManager::generateChessBoard();
+}
+
+
+void MainWindow::on_actionchangeSize75_triggered()
+{
+    GameManager::sizePercent = 0.75;
+    GameManager::generateChessBoard();
+}
+
+
+void MainWindow::on_actionchangeSize100_triggered()
+{
+    GameManager::sizePercent = 1;
+    GameManager::generateChessBoard();
+}
+
+
+void MainWindow::on_actionchangeSize125_triggered()
+{
+    GameManager::sizePercent = 1.25;
+    GameManager::generateChessBoard();
+}
+
+
+void MainWindow::on_actionchangeSize150_triggered()
+{
+    GameManager::sizePercent = 1.5;
+    GameManager::generateChessBoard();
+}
+

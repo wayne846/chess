@@ -34,7 +34,55 @@
      <height>24</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>選單</string>
+    </property>
+    <widget class="QMenu" name="menuchangSize">
+     <property name="title">
+      <string>調整大小</string>
+     </property>
+     <addaction name="actionchangeSize50"/>
+     <addaction name="actionchangeSize75"/>
+     <addaction name="actionchangeSize100"/>
+     <addaction name="actionchangeSize125"/>
+     <addaction name="actionchangeSize150"/>
+    </widget>
+    <addaction name="actionrestart"/>
+    <addaction name="menuchangSize"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
+  <action name="actionrestart">
+   <property name="text">
+    <string>重新開始</string>
+   </property>
+  </action>
+  <action name="actionchangeSize50">
+   <property name="text">
+    <string>50%</string>
+   </property>
+  </action>
+  <action name="actionchangeSize75">
+   <property name="text">
+    <string>75%</string>
+   </property>
+  </action>
+  <action name="actionchangeSize100">
+   <property name="text">
+    <string>100%</string>
+   </property>
+  </action>
+  <action name="actionchangeSize125">
+   <property name="text">
+    <string>125%</string>
+   </property>
+  </action>
+  <action name="actionchangeSize150">
+   <property name="text">
+    <string>150%</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

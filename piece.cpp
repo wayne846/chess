@@ -245,10 +245,8 @@ void Piece::move(int tx, int ty){
     if(!GameManager::hasLegalMove(oppositeColor())){
         QPoint enemyKingPosition = GameManager::kingPosition(oppositeColor());
         if(GameManager::isSquareBeAttacked(color, enemyKingPosition.x(), enemyKingPosition.y())){
-            qDebug() << color << " win";
             GameManager::endGame(color);
         }else{
-            qDebug() << "draw";
             GameManager::endGame(endTurn);
         }
         GameManager::turn = endTurn;

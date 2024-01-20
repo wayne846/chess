@@ -19,7 +19,9 @@ class GameManager
         static const QColor gray;
         static const QColor white;
 
-        static const int square_width;
+        static const int basic_square_width;
+        static int square_width;
+        static float sizePercent;
         static int window_width;
         static MainWindow *window;
         static QGraphicsScene *scene;

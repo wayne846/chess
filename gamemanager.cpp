@@ -14,7 +14,9 @@ const QColor GameManager::dark_square_color = QColor(112, 63, 20);
 const QColor GameManager::gray = QColor(181, 181, 181);
 const QColor GameManager::white = QColor(232, 232, 232);
 
-const int GameManager::square_width = 70;
+const int GameManager::basic_square_width = 70;
+int GameManager::square_width = 70;
+float GameManager::sizePercent = 1;
 int GameManager::window_width = square_width * 8;
 
 MainWindow* GameManager::window;
@@ -27,10 +29,16 @@ vector<Piece*> GameManager::pieces[2];
 int GameManager::turn = Piece::white;
 
 void GameManager::generateChessBoard(){
+    //change size
+    square_width = basic_square_width * sizePercent;
+    window_width = square_width * 8;
+
     //set window
-    window->setGeometry(0, 0, square_width*8, square_width*8);
-    window->setMinimumSize(QSize(square_width*8, square_width*8));
-    window->setMaximumSize(QSize(square_width*8, square_width*8));
+    window->setMinimumSize(QSize(0, 0));
+    window->setMaximumSize(QSize(999999, 999999));
+    window->setGeometry(0, 0, square_width*8, square_width*8 + 20);
+    window->setMinimumSize(QSize(square_width*8, square_width*8 + 20));
+    window->setMaximumSize(QSize(square_width*8, square_width*8 + 20));
     QRect screenSize = window->screen()->geometry();
     window->move(screenSize.width()/2 - window_width/2, screenSize.height()/2 - window_width/2);
     window->setWindowTitle("chess (white turn)");
@@ -63,6 +71,13 @@ void GameManager::generateChessBoard(){
             pieceOnSquare[i][j] = NULL;
         }
     }
+
+    //init pieces
+    pieces[Piece::white].clear();
+    pieces[Piece::black].clear();
+
+    //init other value
+    turn = Piece::white;
 
     //create piece by fen
     int index = 0;

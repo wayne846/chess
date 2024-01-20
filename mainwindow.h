@@ -19,6 +19,19 @@ class MainWindow : public QMainWindow
         Ui::MainWindow* getui();
         ~MainWindow();
 
+    private slots:
+        void on_actionrestart_triggered();
+
+        void on_actionchangeSize50_triggered();
+
+        void on_actionchangeSize75_triggered();
+
+        void on_actionchangeSize100_triggered();
+
+        void on_actionchangeSize125_triggered();
+
+        void on_actionchangeSize150_triggered();
+
     private:
         Ui::MainWindow *ui;
 };
